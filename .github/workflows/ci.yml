@@ -2,7 +2,6 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -14,16 +13,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
-        experimental: [false]
         include:
-          - os: macos-latest
-            python-version: '3.12'
-            experimental: false
           - os: windows-latest
             python-version: '3.12'
-            experimental: true
+            experimental: false
           # - os: ubuntu-20.04
           #   python-version: '3.13'
           #   experimental: true
@@ -42,6 +35,10 @@ jobs:
       run: |
         sudo apt-get install -y bison cmake flex g++
 
+    - name: Setup Developer Command Prompt
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+
     - name: Install Dependencies
       run: pip install -r requirements.txt
 
@@ -54,3 +51,7 @@ jobs:
         LINT: ${{ runner.os == 'Linux' && matrix.python-version == '3.12' }}
       run: python build_scripts/ci_script.py
       continue-on-error: ${{ matrix.experimental }}
+
+    - uses: mxschmitt/action-tmate@v3
+      if: ${{ failure() }}
+

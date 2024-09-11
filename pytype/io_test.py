@@ -149,14 +149,12 @@ class IOTest(unittest.TestCase):
       d.create_file("aaa/other.pyi", "class Other: pass")
       imports_info = d.create_file(
           "imports_info",
-          textwrap.dedent(
-              """
+          file_utils.replace_separator(textwrap.dedent("""
               common/foo common/foo.pyi
               common/bar common/bar.pyi
               common/baz common/baz.pyi
               aaa/other aaa/other.pyi
-              """,
-          ),
+          """)),
       )
       module = d.create_file("m.py", "from common import foo; print(foo.x)")
       unused_imports_info_files = path_utils.join(d.path, "unused_imports_info")
@@ -173,7 +171,10 @@ class IOTest(unittest.TestCase):
       )
       with options.open_function(unused_imports_info_files) as f:
         content = f.read()
-      self.assertEqual(content, "aaa/other.pyi\ncommon/baz.pyi\n")
+      self.assertEqual(
+          content,
+          file_utils.replace_separator("aaa/other.pyi\ncommon/baz.pyi\n"),
+      )
 
 
 if __name__ == "__main__":
